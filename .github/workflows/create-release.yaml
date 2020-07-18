@@ -1,0 +1,57 @@
+on:
+  push:
+    tags:
+      - 'v*' # e.g. v1.0, v20.15.10
+
+name: Create Release
+
+jobs:
+  build:
+    name: Create Release
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/setup-node@v1
+      with:
+        node-version: '12.x'
+
+    - name: Checkout code
+      uses: actions/checkout@master
+    
+    - run: yarn install
+
+    - name: Set version in src/version.ts
+      run: |
+        ref="${{ github.ref }}"
+        tag="$(echo "${ref}" | awk -F/ '{print $NF}')"
+        sed -i "s/develop/${tag}/g" src/version.ts
+    
+    - run: cat src/version.ts
+    
+    - name: Build
+      run: yarn build
+
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.ref }}
+        release_name: Release ${{ github.ref }}
+        body: |
+          Changes in this Release
+          - First Change
+          - Second Change
+        draft: false
+        prerelease: false
+
+    - name: Upload bundle to S3
+      uses: jakejarvis/s3-sync-action@v0.5.0
+      with:
+        args: --acl=public-read --delete --storage-class=REDUCED_REDUNDANCY
+      env:
+        AWS_S3_BUCKET: ${{ secrets.AWS_S3_BUCKET }}
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        AWS_REGION: eu-west-3 # Europe (Paris)
+        SOURCE_DIR: build
