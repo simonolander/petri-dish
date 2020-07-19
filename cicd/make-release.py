@@ -35,6 +35,10 @@ if __name__ == "__main__":
     if version in tags:
         raise Exception(f"{version} already exists as a tag")
 
+    print(f"Pulling latest changes from git")
+    git_pull_output = subprocess.check_output(["git", "pull"], timeout=15).decode()
+    print(git_pull_output)
+
     print(f"Checking that git working directory is clean")
     git_status_porcelain_output = subprocess.check_output(["git", "status", "--porcelain"], timeout=1).decode()
     if git_status_porcelain_output:
