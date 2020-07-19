@@ -48,11 +48,11 @@ if __name__ == "__main__":
     print(git_tag_version_output)
 
     print(f"Pushing git commits (git push)")
-    git_push_output = subprocess.check_output(["git", "push"], timeout=1).decode()
+    git_push_output = subprocess.check_output(["git", "push"], timeout=15).decode()
     print(git_push_output)
 
     print(f"Pushing git tags (git push --tags)")
-    git_push_tags_output = subprocess.check_output(["git", "push", "--tags"], timeout=1).decode()
+    git_push_tags_output = subprocess.check_output(["git", "push", "--tags"], timeout=15).decode()
     print(git_push_tags_output)
 
     print("Done")
